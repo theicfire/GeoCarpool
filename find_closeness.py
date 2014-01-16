@@ -87,8 +87,8 @@ def get_extra_distance(trip, trip2):
 def should_carpool(trip, trip2):
   extra = get_extra_distance(trip, trip2)
   assert(extra > -1e20)
-  # is_close = extra < .25 * trip.get_distance()
-  is_close = extra < 1
+  is_close = extra < .25 * trip.get_distance()
+  is_close = isclose or extra < 5
   is_same = trip.vehicle_id == trip2.vehicle_id
   # if is_close and not is_same:
   #   print get_starts_distance(trip, trip2), get_ends_distance(trip, trip2), trip2.get_distance()
