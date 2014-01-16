@@ -2,7 +2,12 @@
 
 import fileinput
 import csv
+import math
 from math import radians, cos, sin, asin, sqrt
+from datetime import datetime
+
+#constant
+checking_time=False
 
 def haversine(lon1, lat1, lon2, lat2):
     """
@@ -25,7 +30,11 @@ def distance(lat, lon, endlat, endlon):
   # return sqrt((lat - endlat) ** 2 + (lon - endlon) ** 2)
   return haversine(lon, lat, endlon, endlat)
 
-
+def tDiff(t1,t2):
+  t1 = t1
+  t2  = t2
+  minutes  = math.floor((abs(t1 - t2).seconds) / 60)
+  return minutes
 
 class Trip:
   def __init__(self, trip_id, vehicle_id, start_time, end_time, lat, lon, lat2, lon2):
@@ -33,6 +42,10 @@ class Trip:
     self.vehicle_id = vehicle_id
     self.start_time = start_time
     self.end_time = end_time
+    #date_object = datetime.strptime('Jun 1 2005  1:33PM', '%b %d %Y %I:%M%p')
+    self.start_time_obj = datetime.strptime(self.start_time, '%Y-%m-%d %H:%M:%S')
+    self.end_time_obj = datetime.strptime(self.end_time, '%Y-%m-%d %H:%M:%S')
+
     self.start_lat = float(lat)
     self.start_lon = float(lon)
     self.end_lat = float(lat2)
@@ -54,7 +67,10 @@ class Trip:
 
 
   def __str__(self):
-    return 'Id: {} Vehicle: {} Trip start: {} {} End {} {}'.format(self.trip_id, self.vehicle_id, self.start_lat, self.start_lon, self.end_lat, self.end_lon)
+    if checking_time:
+      return 'Id: {} Vehicle: {} Trip start: {}, {} {} End {}, {} {}'.format(self.trip_id, self.vehicle_id, self.start_time, self.start_lat, self.start_lon, self.end_time, self.end_lat, self.end_lon)
+    else:
+      return 'Id: {} Vehicle: {} Trip start: {} {} End {} {}'.format(self.trip_id, self.vehicle_id, self.start_lat, self.start_lon, self.end_lat, self.end_lon)
 
 def readtrips():
   trips = []
@@ -90,12 +106,21 @@ def should_carpool(trip, trip2):
   is_close = extra < .25 * trip.get_distance()
   is_close = is_close or extra < 5
   is_same = trip.vehicle_id == trip2.vehicle_id
-  # if is_close and not is_same:
+
+
+
+  is_similar_time=True
+
+  if checking_time:
+    if tDiff(trip.start_time_obj,trip2.start_time_obj)>60 and tDiff(trip.end_time_obj,trip2.end_time_obj)>60:
+      is_similar_time=False
+
+
   #   print get_starts_distance(trip, trip2), get_ends_distance(trip, trip2), trip2.get_distance()
   #   print get_pickup_distance(trip, trip2), trip.get_distance()
   #   return True
   # return False
-  return is_close and not is_same
+  return is_close and not is_same and (not checking_time or is_similar_time)
 
 trips = readtrips()
 
