@@ -7,7 +7,7 @@ from math import radians, cos, sin, asin, sqrt
 from datetime import datetime
 
 #constant
-checking_time=False
+checking_time=True
 
 def haversine(lon1, lat1, lon2, lat2):
     """
@@ -112,7 +112,7 @@ def should_carpool(trip, trip2):
   is_similar_time=True
 
   if checking_time:
-    if tDiff(trip.start_time_obj,trip2.start_time_obj)>60 and tDiff(trip.end_time_obj,trip2.end_time_obj)>60:
+    if tDiff(trip.start_time_obj,trip2.start_time_obj)>30 and tDiff(trip.end_time_obj,trip2.end_time_obj)>30:
       is_similar_time=False
 
 
