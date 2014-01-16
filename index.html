@@ -65,7 +65,7 @@
 
         }
         function km_to_gallons(km) {
-          console.log('km is', km);
+          // console.log('km is', km);
           return (.6 * km / 25).toFixed(4);
         }
         google.maps.event.addDomListener(window, 'load', initialize);
@@ -76,10 +76,13 @@
             console.log(json);
             // console.log(best_trips); // this will show the info it in firebug console
             var total = 0;
+
+
+            
             $.each(best_trips, function (id, trip) {
               var latlng = new google.maps.LatLng(trip.start_lat, trip.start_lon);
               // var myLatlng = new google.maps.LatLng(trip.start_lat, trip.start_lon);
-              // drawMarker(trip.start_lat, trip.start_lon, id);
+              drawMarker(trip.start_lat, trip.start_lon, id);
               total += extra_kms[id];
 
               $('#pick-trip')

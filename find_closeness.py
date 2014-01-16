@@ -29,6 +29,9 @@ def distance(lat, lon, endlat, endlon):
   # return sqrt((lat - endlat) ** 2 + (lon - endlon) ** 2)
   return haversine(lon, lat, endlon, endlat)
 
+def datetimeToMin(dt):
+  return tDiff(dt,datetime.fromtimestamp(0))
+
 def tDiff(t1,t2):
   t1 = t1
   t2  = t2
@@ -128,8 +131,11 @@ def should_carpool(trip, trip2):
   is_similar_time=True
 
   if checking_time:
-    if tDiff(trip.start_time_obj,trip2.start_time_obj)>30 and tDiff(trip.end_time_obj,trip2.end_time_obj)>30:
+    # print datetimeToMin(trip.start_time_obj)
+   # if tDiff(trip.start_time_obj,trip2.start_time_obj)>30 and tDiff(trip.end_time_obj,trip2.end_time_obj)>30:
+    if datetimeToMin(trip.start_time_obj)-30<datetimeToMin(trip2.start_time_obj) and datetimeToMin(trip.end_time_obj)+30>datetimeToMin(trip2.end_time_obj):
       is_similar_time=False
+
 
 
   #   print get_starts_distance(trip, trip2), get_ends_distance(trip, trip2), trip2.get_distance()
@@ -160,12 +166,13 @@ for trip in trips:
         # print 'DARWIN'
         # print trip.for_darwin()
         # print trip2.for_darwin()
-        count += 1
   if best_trip:
     matches[trip.get_id()] = best_trip
     extra_kms[trip.get_id()] = best
+    count += 1
   all_trips[trip.get_id()] = trip
 
 out_json = json.dumps([matches, all_trips, extra_kms], default=Trip.serialize)
 with open('best-rides.json', 'w') as f:
   f.write(out_json)
+print count
