@@ -34,18 +34,26 @@
           markers.length = 0;
         }
 
-        google.maps.event.addDomListener(window, 'load', initialize);
-        $.getJSON("best-rides.json", function(json) {
-            console.log(json); // this will show the info it in firebug console
-            $.each(json, function (id, trip) {
-              var latlng = new google.maps.LatLng(trip.start_lat, trip.start_lon);
-              // var myLatlng = new google.maps.LatLng(trip.start_lat, trip.start_lon);
+        function drawMarker(lat, lng, title) {
+              var latlng = new google.maps.LatLng(lat, lng);
               var marker = new google.maps.Marker({
                   position: latlng,
                   map: map,
-                  title: id
+                  title: title
               });
               markers.push(marker);
+
+        }
+        google.maps.event.addDomListener(window, 'load', initialize);
+        $.getJSON("best-rides.json", function(json) {
+            best_trips = json[0];
+            all_trips = json[1];
+            console.log(json);
+            // console.log(best_trips); // this will show the info it in firebug console
+            $.each(all_trips, function (id, trip) {
+              var latlng = new google.maps.LatLng(trip.start_lat, trip.start_lon);
+              // var myLatlng = new google.maps.LatLng(trip.start_lat, trip.start_lon);
+              drawMarker(trip.start_lat, trip.start_lon, id);
 
               $('#pick-trip')
                .append($("<option></option>")
@@ -53,9 +61,28 @@
                .text(id)); 
             });
             $('#pick-trip').change(function () {
-              console.log('clicked', $(this).find('option:selected').text());
-              console.log('best', json[$(this).find('option:selected').text()]);
+              var carpoolee_id = $(this).find('option:selected').text();
+              console.log('id', carpoolee_id);
+              var carpooler = all_trips[carpoolee_id];
+              var carpoolee = best_trips[carpoolee_id];
+
+              // console.log('clicked', $(this).find('option:selected').text());
+              // console.log('best', json[$(this).find('option:selected').text()]);
               clearMarkers();
+
+              console.log(carpoolee);
+              console.log(carpooler);
+              // show just the right markers
+              if (carpoolee) {
+                drawMarker(carpoolee.start_lat, carpoolee.start_lon, carpoolee.id);
+                drawMarker(carpoolee.end_lat, carpoolee.end_lon, carpoolee.id);
+              } else {
+                console.log('cannot find someone to pick up');
+              }
+              drawMarker(carpooler.start_lat, carpooler.start_lon, carpooler.id);
+              drawMarker(carpooler.end_lat, carpooler.end_lon, carpooler.id);
+
+
 
             });
 

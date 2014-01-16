@@ -77,6 +77,7 @@ class Trip:
   @staticmethod
   def serialize(self):
       return {
+          "id": self.get_id(),
           "vehicle_id": self.vehicle_id,
           "trip_id":   self.trip_id,
           "start_time": self.start_time,
@@ -142,6 +143,7 @@ trips = readtrips()
 count = 0
 
 matches = {}
+all_trips = {}
 for trip in trips:
   best = 1e20
   best_trip = None
@@ -160,7 +162,8 @@ for trip in trips:
         count += 1
   if best_trip:
     matches[trip.get_id()] = best_trip
+  all_trips[trip.get_id()] = trip
 
-out_json = json.dumps(matches, default=Trip.serialize)
+out_json = json.dumps([matches, all_trips], default=Trip.serialize)
 with open('best-rides.json', 'w') as f:
   f.write(out_json)
