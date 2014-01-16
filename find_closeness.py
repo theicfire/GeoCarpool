@@ -1,5 +1,4 @@
-
-
+import json
 import fileinput
 import csv
 import math
@@ -65,12 +64,28 @@ class Trip:
     """http://www.darrinward.com/lat-long/"""
     return '{},{}\n{},{}'.format(self.start_lat, self.start_lon, self.end_lat, self.end_lon)
 
+  def get_id(self):
+    return str(self.vehicle_id) + '#' + str(self.trip_id)
+
 
   def __str__(self):
     if checking_time:
-      return 'Id: {} Vehicle: {} Trip start: {}, {} {} End {}, {} {}'.format(self.trip_id, self.vehicle_id, self.start_time, self.start_lat, self.start_lon, self.end_time, self.end_lat, self.end_lon)
+      return 'Id: {} Trip start: {}, {} {} End {}, {} {}'.format(self.get_id(), self.start_time, self.start_lat, self.start_lon, self.end_time, self.end_lat, self.end_lon)
     else:
-      return 'Id: {} Vehicle: {} Trip start: {} {} End {} {}'.format(self.trip_id, self.vehicle_id, self.start_lat, self.start_lon, self.end_lat, self.end_lon)
+      return 'Id: {} Trip start: {} {} End {} {}'.format(self.get_id(), self.start_lat, self.start_lon, self.end_lat, self.end_lon)
+
+  @staticmethod
+  def serialize(self):
+      return {
+          "vehicle_id": self.vehicle_id,
+          "trip_id":   self.trip_id,
+          "start_time": self.start_time,
+          "end_time": self.end_time,
+          "start_lat": self.start_lat,
+          "end_lat": self.end_lat,
+          "start_lon": self.start_lon,
+          "end_lon": self.end_lon
+      }
 
 def readtrips():
   trips = []
@@ -125,13 +140,27 @@ def should_carpool(trip, trip2):
 trips = readtrips()
 
 count = 0
+
+matches = {}
 for trip in trips:
+  best = 1e20
+  best_trip = None
   for trip2 in trips:
     if trip != trip2:
       if should_carpool(trip, trip2):
         extra = get_extra_distance(trip, trip2)
-        print 'match', count, trip, trip2, "Extra:",extra
-        print 'DARWIN'
-        print trip.for_darwin()
-        print trip2.for_darwin()
+        if extra < best:
+          best_trip = trip2
+          best = extra
+        # matches.append((trip,trip2,extra));
+        # print 'match', count, trip, trip2, "Extra:",extra
+        # print 'DARWIN'
+        # print trip.for_darwin()
+        # print trip2.for_darwin()
         count += 1
+  if best_trip:
+    matches[trip.get_id()] = best_trip
+
+out_json = json.dumps(matches, default=Trip.serialize)
+with open('best-rides.json', 'w') as f:
+  f.write(out_json)

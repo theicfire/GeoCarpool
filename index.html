@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map-canvas { height: 100% }
+    </style>
+    <script src="//code.jquery.com/jquery-1.10.2.min.js"/>
+    <script type="text/javascript">
+      $.noConflict();
+    </script>
+    <script type="text/javascript"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAU3clbI9RBtk01fB6Ka0pr0Adnk50yNnE&sensor=false">
+    </script>
+    <script type="text/javascript">
+      jQuery( document ).ready(function( $ ) {
+        var map;
+        function initialize() {
+            var myLatlng = new google.maps.LatLng(42.6461238367, -83);
+            var mapOptions = {
+              zoom: 8,
+              center: myLatlng
+            }
+            map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+        }
+        google.maps.event.addDomListener(window, 'load', initialize);
+        $.getJSON("best-rides.json", function(json) {
+            console.log(json); // this will show the info it in firebug console
+            $.each(json, function (id, trip) {
+              var latlng = new google.maps.LatLng(trip.start_lat, trip.start_lon);
+              // var myLatlng = new google.maps.LatLng(trip.start_lat, trip.start_lon);
+              var marker = new google.maps.Marker({
+                  position: latlng,
+                  map: map,
+                  title: 'Hello World!'
+              });
+
+            });
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div id="map-canvas"/>
+  </body>
+</html>
