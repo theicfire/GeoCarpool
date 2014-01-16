@@ -48,6 +48,11 @@ class Trip:
       and abs(self.end_lon) > 0 \
       and self.get_distance() > 1e-9
 
+  def for_darwin(self):
+    """http://www.darrinward.com/lat-long/"""
+    return '{},{}\n{},{}'.format(self.start_lat, self.start_lon, self.end_lat, self.end_lon)
+
+
   def __str__(self):
     return 'Id: {} Vehicle: {} Trip start: {} {} End {} {}'.format(self.trip_id, self.vehicle_id, self.start_lat, self.start_lon, self.end_lat, self.end_lon)
 
@@ -101,4 +106,7 @@ for trip in trips:
       if should_carpool(trip, trip2):
         extra = get_extra_distance(trip, trip2)
         print 'match', count, trip, trip2, "Extra:",extra
+        print 'DARWIN'
+        print trip.for_darwin()
+        print trip2.for_darwin()
         count += 1
