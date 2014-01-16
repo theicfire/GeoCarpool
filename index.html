@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html>
   <head>
+  <title>GeoCarpool Love</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
     <style type="text/css">
       html { height: 100% }
-      body { height: 100%; margin: 0; padding: 0 }
+      body { height: 100%; margin: 0; padding: 0; font: arial, helvetica; }
+      .label {color: #aaa;}
+      div.head {padding: 5px;}
+      #carpoolee-label, #mpg-savings-label {display: none;}
       #map-canvas { height: 100% }
     </style>
     <script src="//code.jquery.com/jquery-1.10.2.min.js"/>
@@ -16,6 +20,7 @@
     </script>
     <script type="text/javascript">
       jQuery( document ).ready(function( $ ) {
+        $('#pick-trip').focus();
         var map;
         var markers = [];
         function initialize() {
@@ -34,33 +39,56 @@
           markers.length = 0;
         }
 
-        function drawMarker(lat, lng, title) {
+        function drawMarker(lat, lng, title, color) {
+            var pinColor = color || "2F76EE"; // a random blue color that i picked
+            var pinImage = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + pinColor,
+                        new google.maps.Size(21, 34),
+                        new google.maps.Point(0,0),
+                        new google.maps.Point(10, 34));
+            var pinShadow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_shadow",
+                        new google.maps.Size(40, 37),
+                        new google.maps.Point(0, 0),
+                        new google.maps.Point(12, 35));
+
+
+
               var latlng = new google.maps.LatLng(lat, lng);
               var marker = new google.maps.Marker({
                   position: latlng,
                   map: map,
-                  title: title
+                  title: title,
+                  icon: pinImage,
+                  shadow: pinShadow
               });
               markers.push(marker);
 
+        }
+        function km_to_gallons(km) {
+          console.log('km is', km);
+          return (.6 * km / 25).toFixed(4);
         }
         google.maps.event.addDomListener(window, 'load', initialize);
         $.getJSON("best-rides.json", function(json) {
             best_trips = json[0];
             all_trips = json[1];
+            extra_kms = json[2];
             console.log(json);
             // console.log(best_trips); // this will show the info it in firebug console
-            $.each(all_trips, function (id, trip) {
+            var total = 0;
+            $.each(best_trips, function (id, trip) {
               var latlng = new google.maps.LatLng(trip.start_lat, trip.start_lon);
               // var myLatlng = new google.maps.LatLng(trip.start_lat, trip.start_lon);
-              drawMarker(trip.start_lat, trip.start_lon, id);
+              // drawMarker(trip.start_lat, trip.start_lon, id);
+              total += extra_kms[id];
 
               $('#pick-trip')
                .append($("<option></option>")
                .attr("value",id)
                .text(id)); 
             });
+            console.log('gallons saved', km_to_gallons(total));
             $('#pick-trip').change(function () {
+              $('#carpoolee-label, #mpg-savings-label').show();
               var carpoolee_id = $(this).find('option:selected').text();
               console.log('id', carpoolee_id);
               var carpooler = all_trips[carpoolee_id];
@@ -74,16 +102,15 @@
               console.log(carpooler);
               // show just the right markers
               if (carpoolee) {
-                drawMarker(carpoolee.start_lat, carpoolee.start_lon, carpoolee.id);
-                drawMarker(carpoolee.end_lat, carpoolee.end_lon, carpoolee.id);
+                drawMarker(carpoolee.start_lat, carpoolee.start_lon, carpoolee.id, 'FFF000');
+                drawMarker(carpoolee.end_lat, carpoolee.end_lon, carpoolee.id, 'FFF000');
+                $('#carpoolee').text(carpoolee.id);
+                $('#mpg-savings').text(km_to_gallons(extra_kms[carpooler.id]) + " gallons");
               } else {
-                console.log('cannot find someone to pick up');
+                $('#carpoolee').text('No one to pick up');
               }
               drawMarker(carpooler.start_lat, carpooler.start_lon, carpooler.id);
               drawMarker(carpooler.end_lat, carpooler.end_lon, carpooler.id);
-
-
-
             });
 
         });
@@ -93,9 +120,14 @@
     </script>
   </head>
   <body>
-    hello
+  <div class='head'>
+  <span class='label'>Carpooler:</span>
     <select id='pick-trip'>
+    <option value="">--</option>
     </select>
+  <span class='label' id='carpoolee-label'>Carpoolee: </span><span id='carpoolee'></span>
+  &nbsp;<span class='label' id='mpg-savings-label'>Gallons of Gas Saved: </span><span id='mpg-savings'></span>
+  </div>
     <div id="map-canvas"/>
   </body>
 </html>
